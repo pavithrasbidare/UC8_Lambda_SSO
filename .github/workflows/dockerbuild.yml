@@ -1,0 +1,41 @@
+name: Build and Push Docker Images to ECR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: arn:aws:iam::302263075199:role/OIDC-Terraform
+        aws-region: us-west-2
+
+    - name: Log in to Amazon ECR
+      run: |
+        aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 302263075199.dkr.ecr.us-west-2.amazonaws.com
+
+    - name: Create ECR repository for hello_world if it doesn't exist
+      run: |
+        aws ecr describe-repositories --repository-names hello_world --region us-west-2 || \
+        aws ecr create-repository --repository-name hello_world --region us-west-2
+
+    - name: Build, Tag & Push Docker Image for hello_world
+      run: |
+        cd App/hello_world/
+        docker build --progress=plain -t hello_world:latest -f Dockerfile .
+        docker tag hello_world:latest 302263075199.dkr.ecr.us-west-2.amazonaws.com/hello_world:latest
+        docker push 302263075199.dkr.ecr.us-west-2.amazonaws.com/hello_world:latest
