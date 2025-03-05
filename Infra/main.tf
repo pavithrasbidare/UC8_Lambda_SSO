@@ -1,13 +1,13 @@
 module "iam_role" {
-  source = "./iam_role"
+  source = "../Modules/Iam"
 }
 
 module "cognito" {
-  source = "./cognito"
+  source = "../Modules/Cognito"
 }
 
 module "lambda_api" {
-  source = "./lambda_api"
+  source = "../Modules/Lambda"
 
   lambda_role_arn     = module.iam_role.lambda_role_arn
   image_name          = var.image_name
