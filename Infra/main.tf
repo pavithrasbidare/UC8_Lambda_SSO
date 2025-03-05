@@ -1,5 +1,5 @@
 module "iam_role" {
-  source = "../Modules/Iam"
+  source = "../Modules/IAM"
 }
 
 module "cognito" {
